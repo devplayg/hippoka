@@ -1,2 +1,3 @@
 # hippoka
-Hippo with Kafka
+
+Once upon a time, a hippo loved kafka.
