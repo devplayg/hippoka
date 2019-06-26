@@ -23,6 +23,7 @@ type Classifier struct {
 	BatchSize int
 	Topic     string
 	Partition int
+	Brokers   []string
 }
 
 func (c *Classifier) Start() error {
@@ -72,17 +73,19 @@ func (c *Classifier) IsDebug() bool {
 	return c.Debug
 }
 
+func (c *Classifier) generate() {
+}
+
 func (c *Classifier) classify() {
 	config := sarama.NewConfig()
-	if c.Partition >= 0 {
-		config.Producer.Partitioner = sarama.NewManualPartitioner
-	} else {
+	config.Producer.Partitioner = sarama.NewManualPartitioner
+	if c.Partition < 0 {
 		config.Producer.Partitioner = sarama.NewHashPartitioner
+		//config.Producer.Partitioner = sarama.NewRandomPartitioner
 	}
-	//config.Producer.Partitioner = sarama.NewRandomPartitioner
 	config.Producer.RequiredAcks = sarama.WaitForAll
 	config.Producer.Return.Successes = true
-	producer, err := sarama.NewSyncProducer(c.config.Kafka.Broker, config)
+	producer, err := sarama.NewSyncProducer(c.Brokers, config)
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -135,16 +138,21 @@ func (c *Classifier) classify() {
 }
 
 func (c *Classifier) loadConfig() error {
-	config, err := ReadConfig("config.yaml")
-	if err != nil {
-		return err
-	}
-	c.config = config
+	//if _, err := os.Stat("/path/to/whatever"); os.IsNotExist(err) {
+	//	// path/to/whatever does not exist
+	//}
+	//
+	//
+	//config, err := ReadConfig("")
+	//if err != nil {
+	//	return err
+	//}
+	//c.config = config
 	return nil
 }
 
 func (c *Classifier) setTimezone() error {
-	if len(c.config.Server.Timezone) > 0 {
+	if c.config != nil && len(c.config.Server.Timezone) > 0 {
 		customLoc, err := time.LoadLocation(c.config.Server.Timezone)
 		if err != nil {
 			return err

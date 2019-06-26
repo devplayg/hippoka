@@ -2,6 +2,6 @@ server:
   timezone: Asia/Seoul
 kafka:
   broker:
-    - kafka1:9092
-    - kafka2:9092
-    - kafka3:9092
+    - kafka:9092
+#    - kafka2:9092
+#    - kafka3:9092
