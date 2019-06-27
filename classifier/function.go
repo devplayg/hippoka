@@ -10,18 +10,6 @@ import (
 	"time"
 )
 
-import (
-//	"github.com/davecgh/go-spew/spew"
-//	"github.com/devplayg/hippo"
-//	log "github.com/sirupsen/logrus"
-//	"io"
-//	"io/ioutil"
-//	"os"
-//	"path/filepath"
-//	"regexp"
-//	"time"
-)
-
 var fetchInterval = time.Duration(2000 * time.Millisecond) // option 으로 처리해야함
 
 func ReadConfig(path string) (*Config, error) {

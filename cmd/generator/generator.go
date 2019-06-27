@@ -4,9 +4,11 @@ import (
 	"github.com/devplayg/hippo"
 	"github.com/devplayg/hippoka/generator"
 	"github.com/spf13/pflag"
+	"math/rand"
 	"os"
 	"runtime"
 	"strings"
+	"time"
 )
 
 const (
@@ -17,19 +19,21 @@ const (
 
 var (
 	fs        = pflag.NewFlagSet(appName, pflag.ContinueOnError)
-	debug     = fs.Bool("debug", false, "Debug")
+	debug     = fs.BoolP("debug", "d", false, "Debug")
 	brokers   = fs.String("bootstrap-server", "", "*REQUIRED: comma-separated Kafka servers to connect to")
 	topic     = fs.String("topic", "", "*REQUIRED: Kafka topic")
-	partition = fs.IntP("partition", "p", -1, "Partition")
+	partition = fs.Int32P("partition", "p", -1, "Partition")
 
 	// Data
-	size     = fs.IntP("size", "s", 1, "Message size")
+	dataSize = fs.Int64P("size", "s", 10, "Data size")
+	count    = fs.Int64P("count", "c", 0, "Message count to send")
 	interval = fs.IntP("interval", "i", 100, "Interval(ms)")
-	max      = fs.Int64P("max", "m", 10000, "Message size")
+	//max      = fs.Int64P("max", "m", -1, "Max count to send")
 )
 
 func init() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
+	rand.Seed(time.Now().UnixNano())
 
 	fs.Usage = hippo.Usage(fs, appDescription, appVersion)
 	_ = fs.Parse(os.Args[1:])
@@ -50,8 +54,8 @@ func main() {
 		Partition: *partition,
 		Brokers:   strings.Split(*brokers, ","),
 
-		Size:     *size,
-		Max:      *max,
+		Count:    *count,
+		DataSize: *dataSize,
 		Interval: *interval,
 	}
 	engine := hippo.NewEngine(generator)

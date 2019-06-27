@@ -1,7 +1,6 @@
 package main
 
 import (
-	"github.com/davecgh/go-spew/spew"
 	"github.com/devplayg/hippo"
 	"github.com/devplayg/hippoka/classifier"
 	"github.com/spf13/pflag"
@@ -35,8 +34,6 @@ func init() {
 
 	fs.Usage = hippo.Usage(fs, appDescription, appVersion)
 	_ = fs.Parse(os.Args[1:])
-
-	spew.Dump(*topic)
 
 	if len(*topic) < 1 {
 		fs.Usage()

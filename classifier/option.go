@@ -1,16 +1,17 @@
 package classifier
 
-type Option struct {
-	Name        string
-	Description string
-	Version     string
-	Debug       bool
-	Dir         string
-	Storage     string
-	BatchSize   int
-	Topic       string
-	Partition   int
-}
+//
+//type Option struct {
+//	Name        string
+//	Description string
+//	Version     string
+//	Debug       bool
+//	Dir         string
+//	Storage     string
+//	BatchSize   int
+//	Topic       string
+//	Partition   int
+//}
 
 //func NewOption(name, description, version string, debug bool) *Option {
 //	return &Option{

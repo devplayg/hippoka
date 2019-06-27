@@ -1,11 +1,17 @@
 package generator
 
 import (
+	"github.com/Shopify/sarama"
 	"github.com/devplayg/hippo"
+	log "github.com/sirupsen/logrus"
+	"math/rand"
 	"time"
 )
 
-var loc = time.UTC
+var (
+	loc         = time.UTC
+	letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+)
 
 type Generator struct {
 	engine *hippo.Engine
@@ -15,11 +21,11 @@ type Generator struct {
 	Debug   bool
 
 	Topic     string
-	Partition int
+	Partition int32
 	Brokers   []string
 
-	Size     int
-	Max      int64
+	Count    int64
+	DataSize int64
 	Interval int
 }
 
@@ -48,75 +54,55 @@ func (g *Generator) IsDebug() bool {
 }
 
 func (g *Generator) generate() {
-	loop := false
+	// Create config
+	config := sarama.NewConfig()
+	config.Producer.Partitioner = sarama.NewManualPartitioner
+	if g.Partition < 0 {
+		config.Producer.Partitioner = sarama.NewHashPartitioner
+		//config.Producer.Partitioner = sarama.NewRandomPartitioner
+	}
+	config.Producer.RequiredAcks = sarama.WaitForAll
+	config.Producer.Return.Successes = true
+
+	// Start producer
+	producer, err := sarama.NewSyncProducer(g.Brokers, config)
+	if err != nil {
+		panic(err)
+	}
+	defer func() {
+		if err := producer.Close(); err != nil {
+			g.engine.ErrChan <- err
+		}
+	}()
+
+	data := randString(g.DataSize)
 	var i int64 = 1
 	for {
-		event := NewFakeEvent(i)
-		c.produce(event)
-
-		if loop == false {
+		e := NewEvent(i, data)
+		msg := NewMessage(e.encoded)
+		m := NewFakeMessage(g.Topic, g.Partition, *msg)
+		partition, offset, err := producer.SendMessage(m)
+		if err != nil {
+			g.engine.ErrChan <- err
+			continue
+		}
+		log.WithFields(log.Fields{
+			"topic":     g.Topic,
+			"partition": partition,
+			"offset":    offset,
+		}).Debug()
+		i++
+		if g.Count > 0 && i > g.Count {
 			return
 		}
+		//time.Sleep(time.Duration(g.Interval) * time.Millisecond)
 	}
 }
 
-//func (g *Generator) classify() {
-//config := sarama.NewConfig()
-//config.Producer.Partitioner = sarama.NewManualPartitioner
-//if c.Partition < 0 {
-//	config.Producer.Partitioner = sarama.NewHashPartitioner
-//	//config.Producer.Partitioner = sarama.NewRandomPartitioner
-//}
-//config.Producer.RequiredAcks = sarama.WaitForAll
-//config.Producer.Return.Successes = true
-//producer, err := sarama.NewSyncProducer(c.Brokers, config)
-//if err != nil {
-//	log.Fatal(err)
-//	return
-//}
-//defer func() {
-//	if err := producer.Close(); err != nil {
-//		c.engine.ErrChan <- err
-//	}
-//}()
-//
-//var messageNo int64 = 1
-//e := NewFakeEvent(messageNo)
-//b, _ := json.Marshal(e)
-//
-//message := &sarama.ProducerMessage{
-//	Topic:     g.Topic,
-//	Partition: int32(g.Partition),
-//	Value:     sarama.ByteEncoder(b),
-//}
-//partition, offset, err := producer.SendMessage(message)
-//if err != nil {
-//	c.engine.ErrChan <- err
-//}
-//fmt.Printf("[%s] p=%d, o=%d\n", c.Topic, partition, offset)
-//atomic.AddInt64(&messageNo, 1)
-
-//e := NewFakeEvent()
-//spew.Dump(e)
-//println("hello")
-//for {
-//    c.engine.ErrChan<-errors.New("test from classify")
-//	//files, err := readDir(option.Dir, option.BatchSize)
-//	//if err != nil && err != io.EOF {
-//	//	log.Error(err)
-//	//	time.Sleep(fetchInterval)
-//	//	continue
-//	//}
-//	//
-//	//// Handle files
-//	//err = processFiles(files)
-//	//if err != nil {
-//	//	log.Error(err)
-//	//	time.Sleep(fetchInterval)
-//	//	continue
-//	//}
-//
-//	// Sleep
-//	time.Sleep(fetchInterval)
-//}
-//}
+func randString(n int64) string {
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letterRunes[rand.Intn(len(letterRunes))]
+	}
+	return string(b)
+}
