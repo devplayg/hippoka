@@ -28,7 +28,6 @@ var (
 	dataSize = fs.Int64P("size", "s", 10e3, "Data size")
 	count    = fs.Int64P("count", "c", 0, "Message count to send")
 	interval = fs.IntP("interval", "i", 100, "Interval(ms)")
-	//max      = fs.Int64P("max", "m", -1, "Max count to send")
 )
 
 func init() {
@@ -64,4 +63,6 @@ func main() {
 		panic(err)
 	}
 	defer engine.Stop()
+
+	hippo.WaitForSignals()
 }

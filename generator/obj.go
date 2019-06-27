@@ -25,16 +25,6 @@ func NewEvent(no int64, data string) *Event {
 	return &e
 }
 
-//
-//func NewFakeEvent(no int64, data string) *Message {
-//	b, err := json.Marshal(&Event{No: no, Data: data})
-//	if err != nil {
-//		panic(err)
-//	}
-//
-//	return &Message{string(b)}
-//}
-
 type Message struct {
 	data string
 }
