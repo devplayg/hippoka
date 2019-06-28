@@ -1,0 +1,55 @@
+url:
+  - http://abc.com
+download:
+  allow:
+    - .jpg
+    - .jpeg
+  deny:
+    - .js
+    - .html
+  size:
+    min: 1
+    max: 1000
+exception:
+  exclude:
+    - http://jquery.com
+    - */imgage/*
+config:
+  depth: 0
+identity: mozilla
+rules:
+  fileNames:
+    ext:
+      - exe
+      - bat
+    contains:
+      - abc
+forder names containing
+this folder name
+
+connection limit
+
+
+
+result:
+  saved:
+  scanned:
+  time
+  active conns
+  tranfer-rate
+
+
+
+
+.magnet-asdfasdfadsf
+
+
+maximum mirroring depth
+maximum external depth
+max size of any html file
+max size of any non-HTML file
+Site size limit(B)
+Max  time overall
+max transfer rate
+max conn/s
+max num of links
